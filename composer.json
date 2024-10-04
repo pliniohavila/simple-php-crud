@@ -1,0 +1,16 @@
+{
+    "name": "tasks/tasks",
+    "description": "Simples API",
+    "authors": [
+        {
+            "name": "pliniohrcode",
+            "email": "pliniohrcode@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {}
+}
