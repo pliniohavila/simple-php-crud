@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Domain\TaskDTO;
 use App\Core\Database;
-
+use App\Domain\Link;
 
 class TasksRepository
 {
@@ -33,14 +33,25 @@ class TasksRepository
         $results = $statement->fetchAll(\PDO::FETCH_ASSOC);
 
         $tasks = array_map(function ($taskData) {
-            return new TaskDTO(
+            $task = new TaskDTO(
                 $taskData['id'] ?? null,
                 $taskData['title'],
                 $taskData['description'],
                 new \DateTime($taskData['created_at']),
                 isset($taskData['updated_at']) ? new \DateTime($taskData['updated_at']) : null,
-                isset($taskData['completed_at']) ? new \DateTime($taskData['completed_at']) : null
+                isset($taskData['completed_at']) ? new \DateTime($taskData['completed_at']) : null 
             );
+
+            $taskId = $task->id ?? null;
+            
+            $task->addLink(new Link("/tasks", 'GET', 'Get all tasks'));
+            $task->addLink(new Link("/tasks?title={title}&description={description}", 'GET', 'GET tasks by title or description (send both or one them)'));
+            $task->addLink(new Link("/tasks", 'POST', 'Create a new task'));
+            $task->addLink(new Link("/tasks/{$taskId}", 'PUT', 'Update title or description or both'));
+            $task->addLink(new Link("/tasks/{$taskId}", 'DELETE'));
+            $task->addLink(new Link("/tasks/{$taskId}", 'PATCH ', 'Mark task as complete'));
+
+            return $task;
         }, $results);
 
         return $tasks;
@@ -71,7 +82,8 @@ class TasksRepository
     public function updateTasks($id, string $table, array $tasks)
     {
         $task = $this->getTasks($table, ['id' => $id])[0];
-        if (is_null($tasks))
+
+        // if (is_null($tasks))
     }
 
     private function processConditions($conditions): string

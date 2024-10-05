@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use \Datetime;
 use App\Domain\TaskDTO;
+use App\Exceptions\NotFoundException;
 use App\Exceptions\ValidationException;
 use App\Services\TasksServices;
 use App\Traits\HttpResponse;
@@ -76,11 +77,25 @@ class TasksController
         $payload = file_get_contents('php://input');
         $data = json_decode($payload, true);
 
-        $updatedTask = $this->tasksServices->updateTasks($id, $data);
+        $checkTitleIsSend = !isset($data['title']) || empty($data['title']) || !is_string($data['title']);
+        $checkDescriptionIsSend = !isset($data['description']) || empty($data['description']) || !is_string($data['description']);
+      
+        try {
+            if ($checkTitleIsSend && $checkDescriptionIsSend)
+                throw ValidationException::missingFieldToUpdate();
+            
+            $updatedTask = $this->tasksServices->updateTasks($id, $data);
 
-        return $this->jsonResponse(201, [
-            'message' => 'Post created successfully.', 
-            'Tasks ID' => $updatedTask
-        ]);
+            return $this->jsonResponse(201, [
+                'message' => 'Post updated successfully.', 
+                'Tasks ID' => $updatedTask
+            ]);
+        } catch (ValidationException $e) {
+            return $this->errorResponse($e->getCode(), 'Validation Error', $e->getMessage());
+        } catch (NotFoundException $e) {
+            return $this->errorResponse($e->getCode(), 'Task Not Found', $e->getMessage());
+        } catch (\Exception $e) {
+            return $this->errorResponse(500, 'Internal Server Error', $e->getMessage());
+        }
     }
 }

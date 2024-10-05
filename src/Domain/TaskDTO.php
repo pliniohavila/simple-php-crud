@@ -40,6 +40,8 @@ class TaskDTO
      */
     public ?DateTime $completedAt;
 
+    public array $links = [];
+
     /**
      * TaskDTO constructor.
      *
@@ -64,5 +66,9 @@ class TaskDTO
         $this->createdAt = $createdAt;
         $this->updatedAt = $updatedAt;
         $this->completedAt = $completedAt;
+    }
+
+    public function addLink(Link $link): void {
+        $this->links[] = $link;
     }
 }

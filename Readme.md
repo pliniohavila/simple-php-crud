@@ -7,18 +7,19 @@ Baseado no [challenge-ignite-nodejs-01](https://github.com/pliniohavila/challeng
 
 ## Road:
 
-[x] Docker
-[x] Router
-[x] TasksController
-[x] Exceptions de validação
-[x] Exceptions para rota e métodos não disponíveis 
-[x] Trait Http para enviar respostas 
-[x] Conexão com o banco de dados 
-[x] Endpoint `POST - /tasks`
-[x] Endpoint `GET - /tasks`
-[ ] Endpoint `PUT - /tasks/:id`
-[ ] Endpoint `DELETE - /tasks/:id`
-[ ] Endpoint `PATCH - /tasks/:id/complete`
+- [x] Docker
+- [x] Router
+- [x] TasksController
+- [x] Exceptions de validação
+- [x] Exceptions para rota e métodos não disponíveis 
+- [x] Trait Http para enviar respostas 
+- [x] Conexão com o banco de dados 
+- [x] Endpoint `POST - /tasks`
+- [x] Endpoint `GET - /tasks`
+- [x] Implementar *HATEOAS*
+- [ ] Endpoint `PUT - /tasks/:id`
+- [ ] Endpoint `DELETE - /tasks/:id`
+- [ ] Endpoint `PATCH - /tasks/:id/complete`
 
 ## Referências
 - https://github.com/Msalah11/vanilla-php-api
