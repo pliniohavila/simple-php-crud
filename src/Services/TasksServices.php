@@ -41,4 +41,10 @@ class TasksServices
         $table = 'tasks';
         return $this->tasksRepository->delete($id, $table);
     }
+
+    public function completeTask($id)
+    {
+        $table = 'tasks';
+        return $this->tasksRepository->completeTask($id, $table);
+    }
 }

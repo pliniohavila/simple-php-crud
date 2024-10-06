@@ -21,8 +21,8 @@ CRUD Simples
 - [x] Endpoint `GET - /tasks`
 - [x] Implementar *HATEOAS*
 - [x] Endpoint `PUT - /tasks/:id`
-- [ ] Endpoint `DELETE - /tasks/:id`
-- [ ] Endpoint `PATCH - /tasks/:id/complete`
+- [x] Endpoint `DELETE - /tasks/:id`
+- [x] Endpoint `PATCH - /tasks/:id/complete`
 
 ### Etapa 2
 Testes e logs

@@ -120,10 +120,18 @@ class TasksRepository
     {
         $task = $this->findById((int)$id);
 
-        $query = "UPDATE {$table} SET complete_at = :complete_at_time";
+        $now = (new DateTime())->format('Y-m-d H:i:s');
+        $data['completed_at'] = null;
+        $data['updated_at'] = $now;
+        $data['id'] = $task->id;
+
+        if (!$task->completedAt)
+            $data['completed_at'] = $now;
+        
+        $query = "UPDATE {$table} SET completed_at = :completed_at, updated_at = :updated_at WHERE id = :id";
 
         $stmt = $this->pdo->prepare($query);
-        return $stmt->execute(['complete_at_time' => (new DateTime())->format('Y-m-d H:i:s')]);
+        return $stmt->execute($data);
     }
 
     private function processConditions($conditions): string
@@ -173,14 +181,14 @@ class TasksRepository
             isset($taskArray['completed_at']) ? new DateTime($taskArray['completed_at']) : null 
         );
 
-        // $taskId = $task->id ?? null;
+        $taskId = $task->id ?? null;
         
-        // $task->addLink(new Link("/tasks", 'GET', 'Get all tasks'));
-        // $task->addLink(new Link("/tasks?title={title}&description={description}", 'GET', 'GET tasks by title or description (send both or one them)'));
-        // $task->addLink(new Link("/tasks", 'POST', 'Create a new task'));
-        // $task->addLink(new Link("/tasks/{$taskId}", 'PUT', 'Update title or description or both'));
-        // $task->addLink(new Link("/tasks/{$taskId}", 'DELETE'));
-        // $task->addLink(new Link("/tasks/{$taskId}", 'PATCH ', 'Mark task as complete'));
+        $task->addLink(new Link("/tasks", 'GET', 'Get all tasks'));
+        $task->addLink(new Link("/tasks?title={title}&description={description}", 'GET', 'GET tasks by title or description (send both or one them)'));
+        $task->addLink(new Link("/tasks", 'POST', 'Create a new task'));
+        $task->addLink(new Link("/tasks/{$taskId}", 'PUT', 'Update title or description or both'));
+        $task->addLink(new Link("/tasks/{$taskId}", 'DELETE'));
+        $task->addLink(new Link("/tasks/{$taskId}/complete", 'PATCH ', 'Mark task as complete'));
 
         return $task;
     }
