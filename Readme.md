@@ -25,7 +25,7 @@ CRUD Simples
 - [x] Endpoint `PATCH - /tasks/:id/complete`
 
 ### Etapa 2
-Testes e logs
+Global Exception Handler, Testes e logs
 
 
 ### Etapa 3
@@ -38,3 +38,4 @@ Migrations, Autenticação, middlewares e documentação
 - https://gist.github.com/juliyvchirkov/8f325f9ac534fe736b504b93a1a8b2ce
 - https://blog.devsense.com/2019/debugging-php-on-docker-with-visual-studio-code
 - https://medium.com/@nikitades/debugging-php-in-vscode-like-a-pro-part-2-vscode-php-in-docker-66ca75cf8b33
+- https://github.com/for-GET/http-decision-diagram?tab=readme-ov-file
