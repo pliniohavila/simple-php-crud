@@ -17,7 +17,7 @@ Baseado no [challenge-ignite-nodejs-01](https://github.com/pliniohavila/challeng
 - [x] Endpoint `POST - /tasks`
 - [x] Endpoint `GET - /tasks`
 - [x] Implementar *HATEOAS*
-- [ ] Endpoint `PUT - /tasks/:id`
+- [x] Endpoint `PUT - /tasks/:id`
 - [ ] Endpoint `DELETE - /tasks/:id`
 - [ ] Endpoint `PATCH - /tasks/:id/complete`
 

@@ -33,6 +33,6 @@ class TasksServices
     public function updateTasks($id, array $tasks)
     {
         $table = 'tasks';
-        return $this->tasksRepository->updateTasks($id, $table, $tasks);
+        return $this->tasksRepository->update($id, $table, $tasks);
     }
 }

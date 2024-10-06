@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Domain\TaskDTO;
 use App\Core\Database;
 use App\Domain\Link;
+use App\Exceptions\NotFoundException;
+use PDO;
 
 class TasksRepository
 {
@@ -17,7 +19,7 @@ class TasksRepository
     /**
      * @param string $table The name of the table.
      * @param array $conditions Conditions to the where clause
-     * @return array
+     * @return TaskDTO[]
      */
     public function getTasks(string $table, array $conditions = []): array 
     {
@@ -26,35 +28,35 @@ class TasksRepository
 
         if (!empty($conditions)) 
             $query .= $this->processConditions($conditions);
+       
+        $stmt = $this->pdo->prepare($query);
+        foreach ($conditions as &$condition) {
+            $condition = "%{$condition}%";
+        };
+        
+        $stmt->execute($conditions);
 
-        $statement = $this->pdo->prepare($query);
-        $statement->execute($conditions);
-
-        $results = $statement->fetchAll(\PDO::FETCH_ASSOC);
-
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
         $tasks = array_map(function ($taskData) {
-            $task = new TaskDTO(
-                $taskData['id'] ?? null,
-                $taskData['title'],
-                $taskData['description'],
-                new \DateTime($taskData['created_at']),
-                isset($taskData['updated_at']) ? new \DateTime($taskData['updated_at']) : null,
-                isset($taskData['completed_at']) ? new \DateTime($taskData['completed_at']) : null 
-            );
-
-            $taskId = $task->id ?? null;
-            
-            $task->addLink(new Link("/tasks", 'GET', 'Get all tasks'));
-            $task->addLink(new Link("/tasks?title={title}&description={description}", 'GET', 'GET tasks by title or description (send both or one them)'));
-            $task->addLink(new Link("/tasks", 'POST', 'Create a new task'));
-            $task->addLink(new Link("/tasks/{$taskId}", 'PUT', 'Update title or description or both'));
-            $task->addLink(new Link("/tasks/{$taskId}", 'DELETE'));
-            $task->addLink(new Link("/tasks/{$taskId}", 'PATCH ', 'Mark task as complete'));
-
+            $task = $this->taskArrayToTaskDTO($taskData);
             return $task;
         }, $results);
 
         return $tasks;
+    }
+
+    public function findById(int $id): TaskDTO
+    {
+        $stmt = $this->pdo->prepare("SELECT * FROM tasks WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+
+        $task =  $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$task)
+            throw NotFoundException::taskNotFoundById($id);
+
+        return $this->taskArrayToTaskDTO($task);
     }
 
     /**
@@ -62,9 +64,9 @@ class TasksRepository
      * @param TaskDTO $data DTO of the tasks to be save
      * @return string|false
      */
-    public function insert(string $table, TaskDTO $data) 
+    public function insert(string $table, TaskDTO $data): string 
     {
-        $table = "public.$table";
+        $table = "$table";
         $tasksArray = array_filter(get_object_vars($data));
         $tasksArray['createdAt'] = ((array) $tasksArray['createdAt'])['date'];
         
@@ -73,24 +75,38 @@ class TasksRepository
         $query = "INSERT INTO {$table} ({$keys})";
         $query .= $this->processInsertedData($tasksArray);
 
-        $statement = $this->pdo->prepare($query);
-        $statement->execute();
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute();
 
         return $this->pdo->lastInsertId();
     }
 
-    public function updateTasks($id, string $table, array $tasks)
+    public function update($id, string $table, array $data): TaskDTO
     {
-        $task = $this->getTasks($table, ['id' => $id])[0];
+        $task = $this->findById((int)$id);
 
-        // if (is_null($tasks))
+        if (isset($data['title'])) 
+            $task->title = $data['title'];
+        if (isset($data['description'])) 
+            $task->description = $data['description'];
+
+        $query = "UPDATE {$table} SET ";
+        $query .= $this->processUpdateData($data);
+        $query .= " WHERE ID = :id";
+        
+        $data['id'] = $id;
+
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute($data);
+
+        $taskUpdated =  $this->findById((int)$id);
+        return $taskUpdated;
     }
 
     private function processConditions($conditions): string
     {
         $attributes = array_keys($conditions);
-        $sql = implode(" AND ", array_map(fn ($attr) => "$attr = :$attr", $attributes));
-
+        $sql = implode(" AND ", array_map(fn ($attr) => "$attr LIKE :$attr", $attributes));
         return " WHERE {$sql}";
     }
     
@@ -101,6 +117,13 @@ class TasksRepository
         $sql = implode(", ", array_map(fn ($attr) => "'{$data[$attr]}'", $attributes));
 
         return " VALUES({$sql})";
+    }
+
+    private function processUpdateData($data): string
+    {
+        $attributes = array_keys($data);    
+        $sql = implode(", ", array_map(fn ($attr) => "$attr = :$attr", $attributes));
+        return $sql;
     }
 
     private function prepareColumName(string $str): string 
@@ -114,5 +137,28 @@ class TasksRepository
             $r .= $s;
         }
         return $r;
+    }
+
+    private function taskArrayToTaskDTO(array $taskArray): TaskDTO
+    {
+        $task = new TaskDTO(
+            $taskArray['id'] ?? null,
+            $taskArray['title'],
+            $taskArray['description'],
+            new \DateTime($taskArray['created_at']),
+            isset($taskArray['updated_at']) ? new \DateTime($taskArray['updated_at']) : null,
+            isset($taskArray['completed_at']) ? new \DateTime($taskArray['completed_at']) : null 
+        );
+
+        // $taskId = $task->id ?? null;
+        
+        // $task->addLink(new Link("/tasks", 'GET', 'Get all tasks'));
+        // $task->addLink(new Link("/tasks?title={title}&description={description}", 'GET', 'GET tasks by title or description (send both or one them)'));
+        // $task->addLink(new Link("/tasks", 'POST', 'Create a new task'));
+        // $task->addLink(new Link("/tasks/{$taskId}", 'PUT', 'Update title or description or both'));
+        // $task->addLink(new Link("/tasks/{$taskId}", 'DELETE'));
+        // $task->addLink(new Link("/tasks/{$taskId}", 'PATCH ', 'Mark task as complete'));
+
+        return $task;
     }
 }
