@@ -6,6 +6,7 @@ use App\Domain\TaskDTO;
 use App\Core\Database;
 use App\Domain\Link;
 use App\Exceptions\NotFoundException;
+use DateTime;
 use PDO;
 
 class TasksRepository
@@ -69,7 +70,7 @@ class TasksRepository
         $table = "$table";
         $tasksArray = array_filter(get_object_vars($data));
         $tasksArray['createdAt'] = ((array) $tasksArray['createdAt'])['date'];
-        
+
         $keys = $this->prepareColumName(implode(', ', array_keys($tasksArray)));
 
         $query = "INSERT INTO {$table} ({$keys})";
@@ -85,11 +86,13 @@ class TasksRepository
     {
         $task = $this->findById((int)$id);
 
+        $data['updated_at'] = (new DateTime())->format('Y-m-d H:i:s');
+
         if (isset($data['title'])) 
             $task->title = $data['title'];
         if (isset($data['description'])) 
             $task->description = $data['description'];
-
+       
         $query = "UPDATE {$table} SET ";
         $query .= $this->processUpdateData($data);
         $query .= " WHERE ID = :id";
@@ -101,6 +104,26 @@ class TasksRepository
 
         $taskUpdated =  $this->findById((int)$id);
         return $taskUpdated;
+    }
+
+    public function delete($id, string $table): bool
+    {
+        $task = $this->findById((int)$id);
+
+        $query = "DELETE FROM {$table} WHERE id = :id";
+
+        $stmt = $this->pdo->prepare($query);
+        return $stmt->execute(['id' => $id]);
+    }
+
+    public function completeTask($id, string $table): bool
+    {
+        $task = $this->findById((int)$id);
+
+        $query = "UPDATE {$table} SET complete_at = :complete_at_time";
+
+        $stmt = $this->pdo->prepare($query);
+        return $stmt->execute(['complete_at_time' => (new DateTime())->format('Y-m-d H:i:s')]);
     }
 
     private function processConditions($conditions): string
@@ -145,9 +168,9 @@ class TasksRepository
             $taskArray['id'] ?? null,
             $taskArray['title'],
             $taskArray['description'],
-            new \DateTime($taskArray['created_at']),
-            isset($taskArray['updated_at']) ? new \DateTime($taskArray['updated_at']) : null,
-            isset($taskArray['completed_at']) ? new \DateTime($taskArray['completed_at']) : null 
+            new DateTime($taskArray['created_at']),
+            isset($taskArray['updated_at']) ? new DateTime($taskArray['updated_at']) : null,
+            isset($taskArray['completed_at']) ? new DateTime($taskArray['completed_at']) : null 
         );
 
         // $taskId = $task->id ?? null;

@@ -35,4 +35,10 @@ class TasksServices
         $table = 'tasks';
         return $this->tasksRepository->update($id, $table, $tasks);
     }
+
+    public function deleteTasks($id)
+    {
+        $table = 'tasks';
+        return $this->tasksRepository->delete($id, $table);
+    }
 }

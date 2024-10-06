@@ -102,4 +102,26 @@ class TasksController
             return $this->errorResponse(500, 'Internal Server Error', $e->getMessage());
         }
     }
+
+    public function deleteTasks()
+    {
+        try {
+            $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            $pathSegments = array_filter(explode('/', $url));
+            $id = $pathSegments[2] ?? -1;
+
+            if (!is_numeric($id))
+                throw ValidationException::idShouldBeAnIntegerValue();
+
+            $isDeletedTask = $this->tasksServices->deleteTasks($id);
+            if ($isDeletedTask)
+                return $this->jsonResponse(204, ['message' => 'Task deleted successfully.']);
+
+            return $this->jsonResponse(410, ['message' => 'Task already deleted.']);
+        } catch (NotFoundException $e) {
+            return $this->errorResponse($e->getCode(), 'Task Not Found', $e->getMessage());
+        } catch (\Exception $e) {
+            return $this->errorResponse(500, 'Internal Server Error', $e->getMessage());
+        }
+    }
 }
