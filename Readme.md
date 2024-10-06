@@ -7,6 +7,9 @@ Baseado no [challenge-ignite-nodejs-01](https://github.com/pliniohavila/challeng
 
 ## Road:
 
+### Etapa 1
+CRUD Simples
+
 - [x] Docker
 - [x] Router
 - [x] TasksController
@@ -20,6 +23,14 @@ Baseado no [challenge-ignite-nodejs-01](https://github.com/pliniohavila/challeng
 - [x] Endpoint `PUT - /tasks/:id`
 - [ ] Endpoint `DELETE - /tasks/:id`
 - [ ] Endpoint `PATCH - /tasks/:id/complete`
+
+### Etapa 2
+Testes e logs
+
+
+### Etapa 3
+Migrations, Autenticação, middlewares e documentação 
+
 
 ## Referências
 - https://github.com/Msalah11/vanilla-php-api
